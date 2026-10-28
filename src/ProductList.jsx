@@ -6,6 +6,8 @@ import { addItem } from './CartSlice';
 
 function ProductList({ onHomeClick }) {
   const [showCart, setShowCart] = useState(false);
+  const [showPlants, setShowPlants] = useState(false);
+  const [addedToCart, setAddedToCart] = useState({});
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
 
@@ -137,13 +139,22 @@ function ProductList({ onHomeClick }) {
 
   const handleAddToCart = (product) => {
     dispatch(addItem(product));
+    setAddedToCart((prevState) => ({
+      ...prevState,
+      [product.name]: true,
+    }));
   };
 
   const calculateTotalQuantity = () => {
     return cartItems ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
   };
 
-  const handleHomeClickInternal = (e) => {
+  const handleHomeClick = (e) => {
+    e.preventDefault();
+    if (onHomeClick) onHomeClick();
+  };
+
+  const handleParadiseNurseyClick = (e) => {
     e.preventDefault();
     if (onHomeClick) onHomeClick();
   };
@@ -155,6 +166,7 @@ function ProductList({ onHomeClick }) {
 
   const handlePlantsClick = (e) => {
     e.preventDefault();
+    setShowPlants(true);
     setShowCart(false);
   };
 
@@ -170,7 +182,7 @@ function ProductList({ onHomeClick }) {
         <div className="tag">
           <div className="luxury" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <img src="https://cdn.pixabay.com/photo/2020/08/05/13/12/eco-5465432_1280.png" alt="Paradise Nursery Logo" style={{ width: '50px', height: '50px', borderRadius: '50%' }} />
-            <a href="/" onClick={handleHomeClickInternal} style={{ textDecoration: 'none', color: 'white' }}>
+            <a href="/" onClick={(e) => handleParadiseNurseyClick(e)} style={{ textDecoration: 'none', color: 'white' }}>
               <div>
                 <h3 style={{ color: 'white', margin: 0 }}>Paradise Nursery</h3>
                 <i style={{ color: 'white', fontSize: '14px' }}>Where Green Meets Serenity</i>
@@ -180,22 +192,22 @@ function ProductList({ onHomeClick }) {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '300px' }}>
           <div>
-            <a href="#" onClick={handleHomeClickInternal} style={{ color: 'white', fontSize: '24px', textDecoration: 'none' }}>Home</a>
+            <a href="#" onClick={(e) => handleHomeClick(e)} style={{ color: 'white', fontSize: '24px', textDecoration: 'none' }}>Home</a>
           </div>
           <div>
-            <a href="#" onClick={handlePlantsClick} style={{ color: 'white', fontSize: '24px', textDecoration: 'none' }}>Plants</a>
+            <a href="#" onClick={(e) => handlePlantsClick(e)} style={{ color: 'white', fontSize: '24px', textDecoration: 'none' }}>Plants</a>
           </div>
           <div>
-            <a href="#" onClick={handleCartClick} style={{ color: 'white', fontSize: '24px', textDecoration: 'none', position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" height="50" width="50">
-                <rect width="156" height="156" fill="none"></rect>
-                <circle cx="80" cy="216" r="12"></circle>
-                <circle cx="184" cy="216" r="12"></circle>
-                <path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-              </svg>
-              <span className="cart_quantity_count" style={{ position: 'absolute', top: '10px', left: '20px', fontSize: '18px', fontWeight: 'bold', color: 'white' }}>
-                {calculateTotalQuantity()}
-              </span>
+            <a href="#" onClick={(e) => handleCartClick(e)} style={{ color: 'white', fontSize: '24px', textDecoration: 'none', position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <h1 className="cart">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68">
+                  <rect width="156" height="156" fill="none"></rect>
+                  <circle cx="80" cy="216" r="12"></circle>
+                  <circle cx="184" cy="216" r="12"></circle>
+                  <path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" id="mainIconPathAttribute"></path>
+                </svg>
+                <span className="cart_quantity_count">{calculateTotalQuantity()}</span>
+              </h1>
             </a>
           </div>
         </div>
@@ -206,36 +218,25 @@ function ProductList({ onHomeClick }) {
         <div className="product-grid">
           {plantsArray.map((category, index) => (
             <div key={index}>
-              <h1 style={{ textAlign: 'center', margin: '30px 0' }}>
+              <h1>
                 <div>{category.category}</div>
               </h1>
-              <div className="product-list" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '30px' }}>
-                {category.plants.map((plant, plantIndex) => {
-                  const isAdded = cartItems.some(item => item.name === plant.name);
-                  return (
-                    <div className="product-card" key={plantIndex} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '15px', width: '280px', textAlign: 'center' }}>
-                      <img className="product-image" src={plant.image} alt={plant.name} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '5px' }} />
-                      <div className="product-title" style={{ fontSize: '20px', fontWeight: 'bold', margin: '10px 0' }}>{plant.name}</div>
-                      <div className="product-description" style={{ fontSize: '14px', color: '#555', marginBottom: '10px' }}>{plant.description}</div>
-                      <div className="product-cost" style={{ fontSize: '18px', color: '#e74c3c', fontWeight: 'bold', marginBottom: '15px' }}>{plant.cost}</div>
-                      <button
-                        className={`product-button ${isAdded ? 'added-to-cart' : ''}`}
-                        onClick={() => handleAddToCart(plant)}
-                        disabled={isAdded}
-                        style={{
-                          padding: '10px 20px',
-                          backgroundColor: isAdded ? '#ccc' : '#4CAF50',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '5px',
-                          cursor: isAdded ? 'not-allowed' : 'pointer'
-                        }}
-                      >
-                        {isAdded ? 'Added to Cart' : 'Add to Cart'}
-                      </button>
-                    </div>
-                  );
-                })}
+              <div className="product-list">
+                {category.plants.map((plant, plantIndex) => (
+                  <div className="product-card" key={plantIndex}>
+                    <img className="product-image" src={plant.image} alt={plant.name} />
+                    <div className="product-title">{plant.name}</div>
+                    <div className="product-description">{plant.description}</div>
+                    <div className="product-cost">{plant.cost}</div>
+                    <button
+                      className={`product-button ${addedToCart[plant.name] ? 'added-to-cart' : ''}`}
+                      onClick={() => handleAddToCart(plant)}
+                      disabled={addedToCart[plant.name]}
+                    >
+                      {addedToCart[plant.name] ? 'Added to Cart' : 'Add to Cart'}
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
